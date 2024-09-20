@@ -13,7 +13,7 @@ This project is a Python script that uses Selenium to log into the Shkolo.bg pla
 
 - **Python 3.x**
 - **Selenium**: Install using `pip install selenium`
-- **ChromeDriver**: [Download ChromeDriver](https://sites.google.com/a/chromium.org/chromedriver/downloads) and ensure it is in your system's `PATH`.
+- **ChromeDriver**: [Download ChromeDriver](https://developer.chrome.com/docs/chromedriver/downloads) and ensure it is in your system's `PATH`.
 - **Google Chrome**: Ensure you have Google Chrome installed.
 
 ## Setup
@@ -25,14 +25,14 @@ This project is a Python script that uses Selenium to log into the Shkolo.bg pla
    cd shkolo-schedule-scraper
 ```
 
-## Install dependencies:
+2. Install dependencies:
 
 ```bash
 pip install selenium
 ```
-**Download and place the ChromeDriver executable in /usr/local/bin/ or any path available in your system. You can also update the chrome_driver_path in the script if ChromeDriver is located elsewhere.**
+Download and place the ChromeDriver executable in /usr/local/bin/ or any path available in your system. You can also update the chrome_driver_path in the script if ChromeDriver is located elsewhere.
 
-Create a `credentials.py` file in the project directory containing your Shkolo.bg username and password:
+3. Create a `credentials.py` file in the project directory containing your Shkolo.bg username and password:
 
 ```python
 # credentials.py
