@@ -1,12 +1,12 @@
-# Shkolo Schedule Scraper
+# StGD - Shkolo Schedule to Google Drive
 
-This project is a Python script that uses Selenium to log into the Shkolo.bg platform, retrieve the class schedule for a specified week, and save the data to an HTML file. The script is designed to run in headless mode, making it perfect for automation.
+StGD is a Python-based tool that automates the process of scraping class schedules from Shkolo.bg and storing them in Google Calendar as tasks.
 
 ## Features
 - **Automated login**: Logs into Shkolo.bg using your credentials.
-- **Schedule scraping**: Fetches the weekly schedule for a specific class.
-- **Dynamic file generation**: Saves each schedule to a uniquely named HTML file to avoid overwriting previous data.
+- **Schedule scraping**: Fetches the weekly schedule for a specific period.
 - **Headless mode**: Runs the browser in headless mode for seamless automation.
+- **File storage**: directly into Google Calendar.
 - **Error handling**: Safely handles errors and ensures the browser is closed after execution.
 
 ## Prerequisites
@@ -15,20 +15,21 @@ This project is a Python script that uses Selenium to log into the Shkolo.bg pla
 - **Selenium**: Install using `pip install selenium`
 - **ChromeDriver**: [Download ChromeDriver](https://developer.chrome.com/docs/chromedriver/downloads) and ensure it is in your system's `PATH`.
 - **Google Chrome**: Ensure you have Google Chrome installed.
+- **Google API setup for Drive access**
 
 ## Setup
 
 1. Clone the repository:
 
 ```bash
-   git clone https://github.com/your-username/shkolo-schedule-scraper.git
-   cd shkolo-schedule-scraper
+git clone https://github.com/DanielKrastev-bit/StGD.git
+cd StGD
 ```
 
 2. Install dependencies:
 
 ```bash
-pip install selenium
+pip install -r requirements.txt
 ```
 Download and place the ChromeDriver executable in /usr/local/bin/ or any path available in your system. You can also update the chrome_driver_path in the script if ChromeDriver is located elsewhere.
 
@@ -39,6 +40,11 @@ Download and place the ChromeDriver executable in /usr/local/bin/ or any path av
 username = "your_username"
 password = "your_password"
 ```
+4. Configure Google Drive API for Drive access. Follow Google's quickstart guide for instructions.
+
+5. Place your ChromeDriver in `/usr/local/bin/` or update the path in `scraper.py`.
+
+
 ## Usage
 **Update the week variable in the script to match the current week or implement an automatic way to calculate it.**
 Run the script:
