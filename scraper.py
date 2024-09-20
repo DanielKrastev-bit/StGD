@@ -44,7 +44,7 @@ def get_schedule(week):
 def extract_schedule_data(file_name):
     """Extracts the schedule data and writes it to the output file for each week."""
     for week in range(current_week, current_week + numer_weeks):
-        print(f"Fetching schedule for week: {week}")
+        # print(f"Fetching schedule for week: {week}")
         get_schedule(week)  # Get schedule for the current week
         
         previous_first_char = None
@@ -99,7 +99,7 @@ def extract_time_range(line):
     """Extracts the time range from a schedule line using regex."""
     time_pattern = r'\d{2}:\d{2} - \d{2}:\d{2}'
     match = re.search(time_pattern, line)
-    return match.group() if match else None
+    return match.group() if match else "08:00 - 13:55"
 
 def main():
     try:

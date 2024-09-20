@@ -44,7 +44,7 @@ def create_event(service, date, start_time, end_time, class_title, color_id):
     }
     
     event = service.events().insert(calendarId=calendar_id, body=event).execute()
-    print(f'Event created: {event["summary"]} at {event["start"]["dateTime"]} to {event["end"]["dateTime"]}, Color ID: {color_id}')
+    # print(f'Event created: {event["summary"]} at {event["start"]["dateTime"]} to {event["end"]["dateTime"]}, Color ID: {color_id}')
 
 def extract_date(line):
     match = re.search(r'Date: (\d{2}\.\d{2}\.\d{4})', line)
@@ -110,20 +110,20 @@ def main():
 
             # New date starts, reset tracking
             current_date = extract_date(line)
-            print(f"Detected date: {current_date}")
+            # print(f"Detected date: {current_date}")
             class_title, start_time, end_time, last_end_time = None, None, None, None
             combined_class_title = None
             event_created_for_day = False
 
         elif line.startswith("Class:"):
             new_class_title = extract_class(line)
-            print(f"Detected class: {new_class_title}")
+            # print(f"Detected class: {new_class_title}")
 
         elif line.startswith("Time range:"):
             time_range = extract_time_range(line)
             if time_range:
                 new_start_time, new_end_time = time_range
-                print(f"Detected time range: {new_start_time} - {new_end_time}")
+                # print(f"Detected time range: {new_start_time} - {new_end_time}")
 
                 # Combine classes if they are adjacent
                 if last_end_time and time_to_minutes(new_start_time) == time_to_minutes(last_end_time):
@@ -151,6 +151,8 @@ def main():
     if not event_created_for_day and current_date:
         print(f"No time ranges detected for {current_date}, adding default event from 08:00 to 15:00.")
         create_event(service, calendar_id, current_date, "08:00", "15:00", "No Specific Class", "1")  # Default color
+    if time_range == None:
+        print(class_title)
 
 if __name__ == '__main__':
     main()
