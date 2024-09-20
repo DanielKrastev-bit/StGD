@@ -44,7 +44,7 @@ def delete_events(service, calendar_id):
 
 def main():
     service = authenticate_google_calendar()
-    calendar_id = 'primary'
+    calendar_id = 'b8779324f29d709c197598ff6c362082049204000bdbceb809d85101f91d578a@group.calendar.google.com'
     delete_events(service, calendar_id)
 
 if __name__ == '__main__':

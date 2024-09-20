@@ -4,13 +4,14 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
-from datetime import datetime, timedelta
+from datetime import datetime
 
 # If modifying these SCOPES, delete the file token.json.
 SCOPES = ['https://www.googleapis.com/auth/calendar']
 
 # Define a list of possible colors (these are Google Calendar color IDs)
 COLORS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"]
+calendar_id = 'b8779324f29d709c197598ff6c362082049204000bdbceb809d85101f91d578a@group.calendar.google.com'
 
 def authenticate_google_calendar():
     creds = None
@@ -27,7 +28,7 @@ def authenticate_google_calendar():
             token.write(creds.to_json())
     return build('calendar', 'v3', credentials=creds)
 
-def create_event(service, calendar_id, date, start_time, end_time, class_title, color_id):
+def create_event(service, date, start_time, end_time, class_title, color_id):
     event = {
         'summary': class_title,
         'start': {
@@ -39,11 +40,11 @@ def create_event(service, calendar_id, date, start_time, end_time, class_title, 
             'timeZone': 'Europe/Sofia',
         },
         'colorId': color_id,
-        'description': 'Created by my_script'  # Tag visible in the UI
+        'description': 'Created by my_script',  # Tag for identification
     }
+    
     event = service.events().insert(calendarId=calendar_id, body=event).execute()
     print(f'Event created: {event["summary"]} at {event["start"]["dateTime"]} to {event["end"]["dateTime"]}, Color ID: {color_id}')
-
 
 def extract_date(line):
     match = re.search(r'Date: (\d{2}\.\d{2}\.\d{4})', line)
@@ -105,7 +106,7 @@ def main():
             # Create the last event for the previous date if needed
             if combined_class_title and start_time and end_time:
                 color_id = get_color_for_class(combined_class_title, class_color_map)
-                create_event(service, calendar_id, current_date, start_time, end_time, combined_class_title, color_id)
+                create_event(service, current_date, start_time, end_time, combined_class_title, color_id)
 
             # New date starts, reset tracking
             current_date = extract_date(line)
@@ -124,26 +125,26 @@ def main():
                 new_start_time, new_end_time = time_range
                 print(f"Detected time range: {new_start_time} - {new_end_time}")
 
-            # Combine classes if they are adjacent
-            if last_end_time and time_to_minutes(new_start_time) == time_to_minutes(last_end_time):
-                combined_class_title = f"{combined_class_title}, {new_class_title}"
-                end_time = new_end_time
-            else:
-                if combined_class_title and start_time and end_time:
-                    color_id = get_color_for_class(combined_class_title, class_color_map)
-                    create_event(service, calendar_id, current_date, start_time, end_time, combined_class_title, color_id)
-                    event_created_for_day = True
+                # Combine classes if they are adjacent
+                if last_end_time and time_to_minutes(new_start_time) == time_to_minutes(last_end_time):
+                    combined_class_title = f"{combined_class_title}, {new_class_title}"
+                    end_time = new_end_time
+                else:
+                    if combined_class_title and start_time and end_time:
+                        color_id = get_color_for_class(combined_class_title, class_color_map)
+                        create_event(service, current_date, start_time, end_time, combined_class_title, color_id)
+                        event_created_for_day = True
 
-                combined_class_title = new_class_title
-                start_time = new_start_time
-                end_time = new_end_time
+                    combined_class_title = new_class_title
+                    start_time = new_start_time
+                    end_time = new_end_time
 
-            last_end_time = new_end_time
+                last_end_time = new_end_time
 
     # Create event for the last class on the last date
     if combined_class_title and start_time and end_time:
         color_id = get_color_for_class(combined_class_title, class_color_map)
-        create_event(service, calendar_id, current_date, start_time, end_time, combined_class_title, color_id)
+        create_event(service, current_date, start_time, end_time, combined_class_title, color_id)
         event_created_for_day = True
 
     # If no specific events were created for a day, add a default event
