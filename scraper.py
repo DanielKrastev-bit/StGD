@@ -10,7 +10,7 @@ import re
 
 
 # Global Variables
-week = 38  # TODO: Automatically get the current week and the next 5 weeks
+week = 40  # TODO: Automatically get the current week and the next 5 weeks
 username = credentials.username
 password = credentials.password
 chrome_driver_path = "/usr/local/bin/chromedriver"
