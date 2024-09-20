@@ -7,10 +7,11 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support import expected_conditions as EC
 import credentials
 import re
+import os
 
 
 # Global Variables
-week = 40  # TODO: Automatically get the current week and the next 5 weeks
+week = 41  # TODO: Automatically get the current week and the next 5 weeks
 username = credentials.username
 password = credentials.password
 chrome_driver_path = "/usr/local/bin/chromedriver"
@@ -31,18 +32,16 @@ def login():
     password_input.send_keys(Keys.RETURN)
 
 def create_unique_file_name():
-    #timestamp = time.strftime("%Y%m%d-%H%M%S")
-    #return f"schedule_{timestamp}.html"
     return "schedule.html"
 
 def get_schedule():
-    # Fetches the schedule page for a specific week.
+    """Fetches the schedule page for a specific week."""
     url = (f"https://app.shkolo.bg/ajax/diary/getScheduleForClass?"
            f"pupilx_id=2400236422&year=24&week={week}&class_year_id=2400011867")
     driver.get(url)
 
 def extract_schedule_data(file_name):
-    # Extracts the schedule data and writes it to the output file.
+    """Extracts the schedule data and writes it to the output file."""
     previous_first_char = None
     date = None
     time_range = None
@@ -69,7 +68,11 @@ def extract_schedule_data(file_name):
                     current_first_char = line[0]
                     if current_first_char != previous_first_char:
                         time_range = extract_time_range(line)
-                        f.write(f"Class: {line}\nTime range: {time_range}\n")
+
+                        # Remove the last time range from the class line
+                        class_info = re.sub(r' \d{2}:\d{2} - \d{2}:\d{2}$', '', line).strip()
+
+                        f.write(f"Class: {class_info}\nTime range: {time_range}\n")
                         previous_first_char = current_first_char
 
     except Exception as e:
@@ -93,13 +96,16 @@ def extract_time_range(line):
 def main():
     try:
         login()
+        delete_schedule_file('schedule.html')
         file_name = create_unique_file_name()
         get_schedule()
         extract_schedule_data(file_name)
         
     finally:
         driver.quit()
-
+def delete_schedule_file(file_path):
+    if os.path.exists(file_path):
+        os.remove(file_path)
 # Run the main function
 if __name__ == "__main__":
     main()
