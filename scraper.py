@@ -8,18 +8,21 @@ from selenium.webdriver.support import expected_conditions as EC
 import credentials
 import re
 
-week = 38 #TODO get curretn week and get next 5 weeks
+
+# Global Variables
+week = 38  # TODO: Automatically get the current week and the next 5 weeks
 username = credentials.username
 password = credentials.password
 chrome_driver_path = "/usr/local/bin/chromedriver"
 chrome_options = Options()
-#chrome_options.add_argument("--headless")
+chrome_options.add_argument("--headless")
 service = Service(chrome_driver_path)
 driver = webdriver.Chrome(service=service, options=chrome_options)
 
 
 def login():
-    driver.get(f"https://app.shkolo.bg")
+    """Logs into the Shkolo app using provided credentials."""
+    driver.get("https://app.shkolo.bg")
     WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, "login-username")))
     username_input = driver.find_element(By.ID, "login-username")
     password_input = driver.find_element(By.ID, "passwordField")
@@ -27,49 +30,76 @@ def login():
     password_input.send_keys(password)
     password_input.send_keys(Keys.RETURN)
 
-def clear_file(): #TODO create diffrent files and save older ones
-    with open('out.html', 'w') as f:
-        print('', file=f)
+def create_unique_file_name():
+    #timestamp = time.strftime("%Y%m%d-%H%M%S")
+    #return f"schedule_{timestamp}.html"
+    return "schedule.html"
+
 def get_schedule():
-    driver.get(f"https://app.shkolo.bg/ajax/diary/getScheduleForClass?pupilx`_id=2400236422&year=24&week={week}&class_year_id=2400011867&_=1726808278160")
+    # Fetches the schedule page for a specific week.
+    url = (f"https://app.shkolo.bg/ajax/diary/getScheduleForClass?"
+           f"pupilx_id=2400236422&year=24&week={week}&class_year_id=2400011867")
+    driver.get(url)
 
-login()
-clear_file()
-get_schedule()
-previous_first_char = None
-date = []
-time_range = []
-try:
-    schedule_table = driver.find_element(By.CLASS_NAME, "scheduleTable")
-    table = schedule_table.find_elements(By.CLASS_NAME, "scheduleTableColumn")
-    for columns in table:
-        table = columns.find_elements(By.CLASS_NAME, "scheduleTableHeading")
-        schedule_date = [row.text for row in table]
-        date_pattern = r'\d{2}\.\d{2}\.\d{4}'
-        for row in schedule_date:
-            match = re.search(date_pattern, row)
-            if match:
-                date = match.group()
-        table = columns.find_elements(By.CLASS_NAME, "scheduleTableBody")
-        schedule_body = [row.text for row in table]
-        schedule_body = ''.join(schedule_body)
-        lines = schedule_body.split('\n')
-        with open('out.html', 'a') as f:
-            print(f"Date: {date}\n", file=f)
-            for line in lines:
-                current_first_char = line[0]
-                if current_first_char != previous_first_char:
-                    time_pattern = r'\d{2}:\d{2} - \d{2}:\d{2}'
-                    match = re.search(time_pattern, line)
-                    if match:
-                        time_range = match.group()
-                    print(f"Class: {line}\n Time range: {time_range}", file=f)
-                    previous_first_char = current_first_char
+def extract_schedule_data(file_name):
+    # Extracts the schedule data and writes it to the output file.
+    previous_first_char = None
+    date = None
+    time_range = None
 
- 
+    try:
+        schedule_table = driver.find_element(By.CLASS_NAME, "scheduleTable")
+        columns = schedule_table.find_elements(By.CLASS_NAME, "scheduleTableColumn")
+        
+        with open(file_name, 'a') as f:
+            for column in columns:
+                # Extract Date
+                heading_elements = column.find_elements(By.CLASS_NAME, "scheduleTableHeading")
+                schedule_date = [row.text for row in heading_elements]
+                date = extract_date(schedule_date)
+                
+                # Extract Class Time and Schedule
+                body_elements = column.find_elements(By.CLASS_NAME, "scheduleTableBody")
+                schedule_body = ''.join([row.text for row in body_elements])
+                lines = schedule_body.split('\n')
+                
+                # Write extracted data
+                f.write(f"Date: {date}\n")
+                for line in lines:
+                    current_first_char = line[0]
+                    if current_first_char != previous_first_char:
+                        time_range = extract_time_range(line)
+                        f.write(f"Class: {line}\nTime range: {time_range}\n")
+                        previous_first_char = current_first_char
 
+    except Exception as e:
+        print(f"Error: {e}")
 
-except Exception as e:
-    print(f"Error: {e}")
+def extract_date(schedule_date):
+    """Extracts the date from a given schedule date string using regex."""
+    date_pattern = r'\d{2}\.\d{2}\.\d{4}'
+    for row in schedule_date:
+        match = re.search(date_pattern, row)
+        if match:
+            return match.group()
+    return None
 
-driver.quit()
+def extract_time_range(line):
+    """Extracts the time range from a schedule line using regex."""
+    time_pattern = r'\d{2}:\d{2} - \d{2}:\d{2}'
+    match = re.search(time_pattern, line)
+    return match.group() if match else None
+
+def main():
+    try:
+        login()
+        file_name = create_unique_file_name()
+        get_schedule()
+        extract_schedule_data(file_name)
+        
+    finally:
+        driver.quit()
+
+# Run the main function
+if __name__ == "__main__":
+    main()

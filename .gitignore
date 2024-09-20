@@ -20,3 +20,5 @@ __pycache__/
 # Ignore system files (macOS and Windows)
 .DS_Store
 Thumbs.db
+
+*.html
