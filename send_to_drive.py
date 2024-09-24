@@ -6,7 +6,6 @@ from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
 from datetime import datetime
 
-# If modifying these SCOPES, delete the file token.json.
 SCOPES = ['https://www.googleapis.com/auth/calendar']
 
 # Define a list of possible colors (these are Google Calendar color IDs)
@@ -40,11 +39,10 @@ def create_event(service, date, start_time, end_time, class_title, color_id):
             'timeZone': 'Europe/Sofia',
         },
         'colorId': color_id,
-        'description': 'Created by my_script',  # Tag for identification
+        'description': 'Created by StGD',
     }
     
     event = service.events().insert(calendarId=calendar_id, body=event).execute()
-    # print(f'Event created: {event["summary"]} at {event["start"]["dateTime"]} to {event["end"]["dateTime"]}, Color ID: {color_id}')
 
 def extract_date(line):
     match = re.search(r'Date: (\d{2}\.\d{2}\.\d{4})', line)
@@ -55,8 +53,10 @@ def extract_date(line):
 def extract_class(line):
     match = re.search(r'Class: (.+)', line)
     if match:
-        return match.group(1)
+        class_title = re.sub(r'\s*\([^)]*\)\s*$', '', match.group(1))
+        return class_title
     return None
+
 
 def extract_time_range(line):
     match = re.search(r'Time range: (\d{2}:\d{2}) - (\d{2}:\d{2})', line)
@@ -65,18 +65,12 @@ def extract_time_range(line):
     return None
 
 def time_to_minutes(time_str):
-    """Convert time string (HH:MM) to minutes since midnight."""
+    # Convert time string (HH:MM) to minutes since midnight.
     hours, minutes = map(int, time_str.split(':'))
     return hours * 60 + minutes
 
-def minutes_to_time(minutes):
-    """Convert minutes since midnight back to time string (HH:MM)."""
-    hours = minutes // 60
-    minutes = minutes % 60
-    return f'{hours:02}:{minutes:02}'
-
 def get_color_for_class(class_title, class_color_map):
-    """Assign a color to a class if not already assigned."""
+    # Assign a color to a class if not already assigned.
     if class_title not in class_color_map:
         color_index = len(class_color_map) % len(COLORS)
         class_color_map[class_title] = COLORS[color_index]
@@ -84,18 +78,11 @@ def get_color_for_class(class_title, class_color_map):
 
 def main():
     service = authenticate_google_calendar()
-    calendar_id = 'primary'
     
     with open('schedule.html', 'r', encoding='utf-8') as file:
         lines = file.readlines()
 
-    current_date = None
-    class_title = None
-    start_time = None
-    end_time = None
-    last_end_time = None
-    combined_class_title = None
-    event_created_for_day = False  # Track if at least one event was created for the day
+    current_date, class_title, start_time, end_time, last_end_time, combined_class_title, event_created_for_day = None, None, None, None, None, None, None
 
     class_color_map = {}  # To map each class to a specific color
 
@@ -127,7 +114,7 @@ def main():
 
                 # Combine classes if they are adjacent
                 if last_end_time and time_to_minutes(new_start_time) == time_to_minutes(last_end_time):
-                    combined_class_title = f"{combined_class_title}, {new_class_title}"
+                    combined_class_title = f"{new_class_title}"
                     end_time = new_end_time
                 else:
                     if combined_class_title and start_time and end_time:

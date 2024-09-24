@@ -34,7 +34,7 @@ def delete_events(service, calendar_id):
             break
 
         for event in events:
-            if 'description' in event and 'Created by my_script' in event['description']:
+            if 'description' in event and 'Created by StGD' in event['description']:
                 # print(f'Deleting event: {event["summary"]} at {event["start"].get("dateTime", event["start"].get("date"))}')
                 service.events().delete(calendarId=calendar_id, eventId=event['id']).execute()
 
